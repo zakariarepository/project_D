@@ -73,11 +73,17 @@ spec:
         - tests
 
     - name: deploy
+      workspaces: 
+        - name: manifest-dir
+          workspace: pipeline-workspace
       taskRef:
         name: openshift-client
         kind: ClusterTask
       params:
       - name: SCRIPT
-        value: "oc create deploy $(params.app-name) --image=$(params.build-image)"
+        value: |
+          oc apply --manifest-file deploy/
+          oc wait --for=condition=available deployment/hitcounter
+          oc get pods
       runAfter:
         - build
